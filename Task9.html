@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marksheet Calculator</title>
+    <!-- Include jsPDF library for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4eef5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            background-color: rgb(246, 249, 255);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 500px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-calculate {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-calculate:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-reset {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background-color: #d32f2f;
+        }
+        
+        .btn-save-pdf {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-save-pdf:hover {
+            background-color: #0b7dda;
+        }
+        
+        .result-field {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        
+        .max-marks {
+            color: #666;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grade Calculator</h1>
+        <table>
+            <tr>
+                <td>Data Structures</td>
+                <td><input type="number" id="dataStructures" min="0" max="100"> <span class="max-marks">(Max: 100)</span></td>
+            </tr>
+            <tr>
+                <td>English</td>
+                <td><input type="number" id="englishMarks" min="0" max="100"> <span class="max-marks">(Max: 100)</span></td>
+            </tr>
+            <tr>
+                <td>Mathematics</td>
+                <td><input type="number" id="mathMarks" min="0" max="100"> <span class="max-marks">(Max: 100)</span></td>
+            </tr>
+            <tr>
+                <td>Statistics</td>
+                <td><input type="number" id="statisticsMarks" min="0" max="100"> <span class="max-marks">(Max: 100)</span></td>
+            </tr>
+            <tr>
+                <td>Chemistry</td>
+                <td><input type="number" id="chemistryMarks" min="0" max="100"> <span class="max-marks">(Max: 100)</span></td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td><input type="text" id="totalMarks" class="result-field" readonly></td>
+            </tr>
+            <tr>
+                <td>Percentage</td>
+                <td><input type="text" id="percentageMarks" class="result-field" readonly></td>
+            </tr>
+            <tr>
+                <td>Grade</td>
+                <td><input type="text" id="gradeMarks" class="result-field" readonly></td>
+            </tr>
+        </table>
+        
+        <div class="buttons">
+            <button class="btn-calculate" onclick="calculateResults()">Calculate</button>
+            <button class="btn-reset" onclick="resetForm()">Reset</button>
+            <button class="btn-save-pdf" onclick="saveToPDF()">Save as PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        function calculateResults() {
+            // Get input values
+            const dataStructures = Number(document.getElementById('dataStructures').value) || 0;
+            const englishMarks = Number(document.getElementById('englishMarks').value) || 0;
+            const mathMarks = Number(document.getElementById('mathMarks').value) || 0;
+            const statisticsMarks = Number(document.getElementById('statisticsMarks').value) || 0;
+            const chemistryMarks = Number(document.getElementById('chemistryMarks').value) || 0;
+            
+            // Validate input values
+            if (dataStructures > 100 || englishMarks > 100 || mathMarks > 100 || statisticsMarks > 100 || chemistryMarks > 100) {
+                alert("Marks cannot exceed 100 for any subject");
+                return;
+            }
+            
+            // Calculate total
+            const totalMarks = dataStructures + englishMarks + mathMarks + statisticsMarks + chemistryMarks;
+            
+            // Calculate percentage
+            const percentageMarks = (totalMarks / 500) * 100;
+            
+            // Determine grade
+            let gradeMarks;
+            if (percentageMarks >= 90) {
+                gradeMarks = "A+";
+            } else if (percentageMarks >= 80) {
+                gradeMarks = "A";
+            } else if (percentageMarks >= 70) {
+                gradeMarks = "B+";
+            } else if (percentageMarks >= 60) {
+                gradeMarks = "B";
+            } else if (percentageMarks >= 50) {
+                gradeMarks = "C";
+            } else if (percentageMarks >= 40) {
+                gradeMarks = "D";
+            } else {
+                gradeMarks = "F";
+            }
+            
+            // Display results
+            document.getElementById('totalMarks').value = totalMarks;
+            document.getElementById('percentageMarks').value = percentageMarks.toFixed(2) + "%";
+            document.getElementById('gradeMarks').value = gradeMarks;
+        }
+        
+        function resetForm() {
+            document.getElementById('dataStructures').value = "";
+            document.getElementById('englishMarks').value = "";
+            document.getElementById('mathMarks').value = "";
+            document.getElementById('statisticsMarks').value = "";
+            document.getElementById('chemistryMarks').value = "";
+            document.getElementById('totalMarks').value = "";
+            document.getElementById('percentageMarks').value = "";
+            document.getElementById('gradeMarks').value = "";
+        }
+        
+        function saveToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.text("Student Marksheet", 105, 15, null, null, "center");
+            
+            // Add current date
+            const today = new Date();
+            const dateStr = today.toLocaleDateString();
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${dateStr}`, 105, 22, null, null, "center");
+            
+            // Add content
+            doc.setFontSize(12);
+            const startY = 30;
+            const lineHeight = 8;
+            
+            // Subject names and marks
+            doc.text("Subjects", 20, startY);
+            doc.text("Marks", 100, startY);
+            doc.line(20, startY + 2, 190, startY + 2);
+            
+            // Data Structures
+            const dataStructures = document.getElementById('dataStructures').value || "0";
+            doc.text("Data Structures", 20, startY + lineHeight * 1);
+            doc.text(dataStructures, 100, startY + lineHeight * 1);
+            
+            // English
+            const englishMarks = document.getElementById('englishMarks').value || "0";
+            doc.text("English", 20, startY + lineHeight * 2);
+            doc.text(englishMarks, 100, startY + lineHeight * 2);
+            
+            // Maths
+            const mathMarks = document.getElementById('mathMarks').value || "0";
+            doc.text("Mathematics", 20, startY + lineHeight * 3);
+            doc.text(mathMarks, 100, startY + lineHeight * 3);
+            
+            // Statistics
+            const statisticsMarks = document.getElementById('statisticsMarks').value || "0";
+            doc.text("Statistics", 20, startY + lineHeight * 4);
+            doc.text(statisticsMarks, 100, startY + lineHeight * 4);
+            
+            // Chemistry
+            const chemistryMarks = document.getElementById('chemistryMarks').value || "0";
+            doc.text("Chemistry", 20, startY + lineHeight * 5);
+            doc.text(chemistryMarks, 100, startY + lineHeight * 5);
+            
+            doc.line(20, startY + lineHeight * 5 + 2, 190, startY + lineHeight * 5 + 2);
+            
+            // Total
+            const totalMarks = document.getElementById('totalMarks').value || "0";
+            doc.text("Total", 20, startY + lineHeight * 6);
+            doc.text(totalMarks, 100, startY + lineHeight * 6);
+            
+            // Percentage
+            const percentageMarks = document.getElementById('percentageMarks').value || "0%";
+            doc.text("Percentage", 20, startY + lineHeight * 7);
+            doc.text(percentageMarks, 100, startY + lineHeight * 7);
+            
+            // Grade
+            const gradeMarks = document.getElementById('gradeMarks').value || "N/A";
+            doc.text("Grade", 20, startY + lineHeight * 8);
+            doc.text(gradeMarks, 100, startY + lineHeight * 8);
+            
+            // Save the PDF
+            doc.save("student_marksheet.pdf");
+        }
+    </script>
+</body>
+</html>
